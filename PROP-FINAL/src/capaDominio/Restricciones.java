@@ -14,26 +14,58 @@ import java.util.Map;
  * @author Victor Rojas
  */
 public class Restricciones {
-  //  private ArrayList<Integer> conts;
 
+    private ArrayList<ArrayList<String>> suavizar;
+    
+    private boolean b1,b2,b3;
+    private ArrayList<Integer> punteros;
+    
+    
+    
     /**
      * Constructora de la clase Restricciones sense parametres.
      */
     public Restricciones(){
-        
+       
     }
     
-    /*public boolean mismaFranja(capaDatos.Asignatura a1, capaDatos.Asignatura a2){
-        //Franaja es mañana o tarde
-        return a1.getFranja() == a2.getFranja();
-    }*/
+    public void setRestricciones (ArrayList<ArrayList<String>> suavizar){
+        this.suavizar = suavizar;
+    }
+    
+    private void comprueba_suavizar_restricciones (capaDatos.Asignatura a){
+        b1 = false; b2 = false; b3 = false;
+        punteros = new ArrayList<>();
+        if (!suavizar.isEmpty()){
+            for (int i = 0; i < 3; i++){
+                boolean fin = false;
+                for (int j = 0; j < suavizar.get(i).size() && !fin; j++){
+                    if (a.getMat().getSiglas() == suavizar.get(i).get(j)){
+                        if (i == 0) b1 = true;
+                        else if (i == 1) b2 = true;
+                        else if (i == 2) b3 = true;
+                        fin = true;
+                    } 
+                }
+            }
+            for (int i = 0; i < suavizar.get(3).size(); i++){
+                if (a.getMat().getSiglas() == suavizar.get(3).get(i)){
+                    if (i%2 == 0) punteros.add(i+1);
+                    else punteros.add(i-1);
+                }
+            }
+        }
+    }
+    
+    
+    //RESTRICCIONES NO SUAVIZABLES
     /**
      * Comproba si l'asignatura a1 i l'aula a2 tenen el mateix tipus de clase(T, L, P).
      * @param a1 Asignatura que es vol comparar el tipus de clase.
      * @param a2 Aula que es vol comparar el tipus de clase.
      * @return Retorna true si tant a1 com a2 tenen el mateix tipus de clase, i fals altrament.
      */
-    public boolean compartenTipo(capaDatos.Asignatura a1, capaDatos.Aula a2){
+    private boolean compartenTipo(capaDatos.Asignatura a1, capaDatos.Aula a2){
         return a1.getTipusClase()==a2.getTipusClase();
     }
     /**
@@ -42,16 +74,19 @@ public class Restricciones {
      * @param a2 Aula que es vol comparar la seva capacitat.
      * @return Retorna true si es pot fer l'asignatura a1 a l'aula a2 comprovant les capacitats, fals altrament.
      */
-    public boolean capacidadValida(capaDatos.Asignatura a1, capaDatos.Aula a2){
+    private boolean capacidadValida(capaDatos.Asignatura a1, capaDatos.Aula a2){
         return a1.getCapacidad()<=a2.getCapacidad();
     }
+    
+    
+    //RESTRICCIONES SUAVIZABLES
     /**
      * Comprova si l'asingatura a1 te nivell diferent a l'asignatura a2.
      * @param a1 Asignatura que sera comparada.
      * @param a2 Segona Asignatura que sera comparada.
      * @return Retorna true si a1 i a2 no son del mateix nivell i fals altrament.
      */
-    public boolean tienenDistintoNivel(capaDatos.Asignatura a1, capaDatos.Asignatura a2){
+    private boolean tienenDistintoNivel(capaDatos.Asignatura a1, capaDatos.Asignatura a2){
         return a1.getMat().getNivel() != a2.getMat().getNivel() || a1.getMat()== a2.getMat();
     }
     /**
@@ -60,7 +95,7 @@ public class Restricciones {
      * @param a2 Segona Asignatura que es comparara amb la primera.
      * @return Retorna false si no son correquisit i fals altrament.
      */
-    public boolean esCorequisito(capaDatos.Asignatura a1, capaDatos.Asignatura a2){
+    private boolean esCorequisito(capaDatos.Asignatura a1, capaDatos.Asignatura a2){
         boolean esCoreq = false;
         ArrayList<capaDatos.Requisito> auxReq = a1.getMat().getReqs();
         ArrayList<capaDatos.Materia> auxMat = null;
@@ -78,19 +113,28 @@ public class Restricciones {
      * @param a2 Segona asignatura que sera comparada amb la primera.
      * @return Retorna true si son del mateix nivell i fals altrament.
      */
-    public boolean pertMismoGrupo(capaDatos.Asignatura a1, capaDatos.Asignatura a2){
+    private boolean pertMismoGrupo(capaDatos.Asignatura a1, capaDatos.Asignatura a2){
         return a1.getMat().getSiglas() == a2.getMat().getSiglas() && 
                 (((int)a1.getGrupo()/10 == (int)a2.getGrupo()/10) ||  (a1.getGrupo()%10==0 && a2.getGrupo()%10==0) )&&
                 (a1.getGrupo()%10==a2.getGrupo()%10 || 
                 a1.getGrupo()%10!=a2.getGrupo()%10 &&(a1.getGrupo()%10==0 || a2.getGrupo()%10==0));
     }
     
+    
+    private boolean puedenIrJuntas(capaDatos.Asignatura a2){
+        for (int i = 0; i < punteros.size(); i++){
+            if (a2.getMat().getSiglas() == suavizar.get(3).get(punteros.get(i))) return false;
+        }
+        return true;
+    }
+        
+    
     //-----------------------------------------
     private boolean rest_asignatura_fh(capaDatos.Asignatura a1, capaDatos.Asignatura a2){
-        return (tienenDistintoNivel(a1, a2) &&
-                        !esCorequisito(a1, a2) && 
-                        !esCorequisito(a2, a1) &&
-                        !pertMismoGrupo(a1, a2));
+        return ((b1 || tienenDistintoNivel(a1, a2)) &&
+                (b2 || (!esCorequisito(a1, a2) && !esCorequisito(a2, a1))) && 
+                (b3 || !pertMismoGrupo(a1, a2)) &&
+                        puedenIrJuntas(a2));
     }
      
     /**
@@ -113,6 +157,7 @@ public class Restricciones {
             else j++;
         }
         
+        comprueba_suavizar_restricciones(asig);
         ArrayList<capaDatos.Aula> aulaAux = (ArrayList<capaDatos.Aula>)aulaAux1.clone();
         do {
             if (cjtAsig.containsKey(franH)){

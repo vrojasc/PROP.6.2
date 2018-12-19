@@ -29,6 +29,8 @@ public class controladorDominio {
     * Conjunt d'asignacions on es guardaran totes les asignacions que es van creant durant l'execucio per tal de guardar l'horari.
     */
     private capaDominio.CjtAsignaciones CJTA;
+        
+    
     
     /**
      * Constructora amb un parametre d'entrada.
@@ -46,8 +48,13 @@ public class controladorDominio {
      public ArrayList<Aula> getAulas(){
          return gestionDatos2.getcjt_aules();
      }
-     /* FUERA
-  */
+
+     public void setRestricciones(ArrayList<ArrayList<String>> suavizar){
+         rest.setRestricciones(suavizar);
+     }
+     //pre: suavizar es un arrayList de tamaño 4, con las materias de los 4 tipos a las que se anula la restriccion
+     
+     
        /**
         * Funcio que genera recursivament una posible combinacio d'asignacions entre aules i asignatures. I les va guradan al CjtAsignaciones de la clase controladorDominio.
         * @param A Arraylist que conte totes les asignatues que s'han d'asignar.
@@ -123,6 +130,9 @@ public class controladorDominio {
         Asignatura asignatura = null;
         return asignatura;
     }
+    
+    
+    
     // DESPUES DE ELIMINAR HABRIA QUE VOLVER A CARGAR.
     public boolean eliminar_asignatura(Asignatura asignatura){
         return gestionDatos2.del_asignatura(asignatura);
@@ -133,10 +143,7 @@ public class controladorDominio {
     public boolean eliminar_materia(Materia mat){
         return gestionDatos2.del_materia(mat);
     }
-    public boolean mod_requisits(){
-        return false;
-        
-    }
+  
     
     
     /**
