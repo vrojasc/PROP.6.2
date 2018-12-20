@@ -11,7 +11,7 @@ package capaDatos;
  * @author Alberto Camacho
  */
 public class Asignatura {
-
+// IDENTIFICADORES => siglas (de materia), tipoclase y grupo.
     public Asignatura() {
         
     }
@@ -94,7 +94,7 @@ public class Asignatura {
     public TipusClase getTipusClase() {
         return tipusClase;
     }
-     
+    
     static public TipusClase StringtoTipusclase(String tc){
         if (tc.equals("T")) return TipusClase.T;
         else if (tc.equals("L")) return TipusClase.L;

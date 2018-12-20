@@ -6,8 +6,10 @@
 package capaDominio;
 
 import capaDatos.Asignatura;
+import static capaDatos.Asignatura.StringtoTipusclase;
 import capaDatos.Aula;
 import capaDatos.Materia;
+import capaDatos.Materia.Especialitat;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -119,24 +121,60 @@ public class controladorDominio {
         return false;
     }
     
-    private Asignatura StringstoAsignatura(String tipusClase, String grupo, String capacidad, String horaclase, Materia mat){
-        Asignatura asignatura = null;
-        return asignatura;
+    
+    
+    public Asignatura StringtoAsignatura(String tipusClase, String grupo, Materia mat, String siglas){
+        return gestionDatos2.found_asignatura(tipusClase, mat, siglas, grupo);
     }
-    // DESPUES DE ELIMINAR HABRIA QUE VOLVER A CARGAR.
-    public boolean eliminar_asignatura(Asignatura asignatura){
-        return gestionDatos2.del_asignatura(asignatura);
+    
+    public Materia StringtoMateria(String siglas){
+        return gestionDatos2.found_materia(siglas);
     }
+    public Aula StringtoAula(String codigo){
+        return gestionDatos2.found_aula(codigo);
+    }
+    
+    
+    // SIEMPRE SE GENERA EL HORARIO DE NUEVO, PODRIA SER OPCIONAL
+    public boolean eliminar_asignatura(Asignatura asignatura, Aula aula, FranjaHoraria fh){
+        boolean b = gestionDatos2.del_asignatura(asignatura);
+       /* if (b){
+            CJTA.delelement(fh, aula, asignatura);
+        }*/
+        return b;
+    }
+    
     public boolean eliminar_aula(Aula aula){
-        return gestionDatos2.del_aula(aula);
+        boolean b = gestionDatos2.del_aula(aula);
+       /* if (b){
+            CJTA = new capaDominio.CjtAsignaciones();
+            CJTA = Generar();
+        }*/
+        return b;
     }
+    
     public boolean eliminar_materia(Materia mat){
-        return gestionDatos2.del_materia(mat);
+        gestionDatos2.eliminar_asignaturas_materia(mat);
+        boolean b = gestionDatos2.del_materia(mat);
+        /*if (b){
+            CJTA = new capaDominio.CjtAsignaciones();
+            CJTA = Generar();
+        }*/
+        return b;
     }
-    public boolean mod_requisits(){
-        return false;
-        
+    
+    
+    public boolean anadir_asignatura(String tipusClase, String grupo, String siglas, String capacidad, String horaClase){
+        return gestionDatos2.anadir_asignatura(StringtoMateria(siglas), Integer.parseInt(grupo), tipusClase, Integer.parseInt(capacidad), Integer.parseInt(horaClase));
     }
+    public boolean anadir_aula(String codigo, String capacidad, String tipusClase){
+        return gestionDatos2.anadir_aula(codigo, Integer.parseInt(capacidad), StringtoTipusclase(tipusClase));
+    }
+    public boolean anadir_materia(String nom, String siglas, String nivel, String e){
+        return gestionDatos2.anadir_materia(nom, siglas, Integer.parseInt(nivel), e);
+    }
+    
+    
     
     
     /**

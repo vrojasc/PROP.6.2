@@ -145,7 +145,7 @@ public class CjtAsignaciones {
          FranjaHoraria fh = new FranjaHoraria(Integer.parseInt(horaini), StringtoDia(dia));
          if (!cjt_asignaciones.containsKey(fh)) cjt_asignaciones.put(fh, new HashMap<>());
          cjt_asignaciones.get(fh).put(aux_aula, aux_asignatura);
-           
+         
      }
         // return aux;
      
@@ -175,15 +175,18 @@ public class CjtAsignaciones {
         // cjt_asignaciones = aux;
          return true;
      }
-/*
-    public boolean eliminar_asingatura(Asignatura asignatura, FranjaHoraria fh) {
-        Map<capaDatos.Aula, capaDatos.Asignatura> m_aux = cjt_asignaciones.get(fh);
-        for (Map.Entry<capaDatos.Aula, capaDatos.Asignatura> entry : cjt_asignaciones.get(fh).entrySet()){
-            if (entry.getValue().equals(asignatura)){
-                
-            }
+     
+     
+     // Eliminar una instancia sabiendo solo la franjahoraria y la asignatura
+     public boolean eliminar_asignatura(Asignatura asignatura, FranjaHoraria fh){
+         Aula aux_aula = null;
+         for ( Map.Entry<capaDatos.Aula, capaDatos.Asignatura> entry : cjt_asignaciones.get(fh).entrySet()){
+                 if (entry.getValue().equals(asignatura)){
+                     aux_aula = entry.getKey();
+                     delelement(fh, aux_aula, asignatura);
+                     return true;
+                 }
         }
-        return false;
-    }
-*/
+         return false;
+     }
 }

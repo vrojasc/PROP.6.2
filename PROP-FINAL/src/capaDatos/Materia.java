@@ -26,6 +26,14 @@ public class Materia {
     public enum Especialitat {
         Computació, EnginyeriaComputadors, EnginyeriaSoftware, SistemesInformació, TecnologiesInformació
     }
+    static public Especialitat StringtoEspecialitat(String e){
+        if (e.equals("Computacio") || e.equals("Computació")) return Especialitat.Computació;
+        if (e.equals("EnginyeriaComputadors")) return Especialitat.EnginyeriaComputadors;
+        if (e.equals("EnginyeriaSoftware")) return Especialitat.EnginyeriaSoftware;
+        if (e.equals("SistemesInformació")) return Especialitat.SistemesInformació;
+        if (e.equals("TecnologiesInformació")) return Especialitat.TecnologiesInformació;
+        return null;
+    }
     /**
      * Nom de la Materia.
      */

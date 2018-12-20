@@ -6,6 +6,9 @@
 package capaDatos;
 
 
+import static capaDatos.Asignatura.StringtoTipusclase;
+import capaDatos.Asignatura.TipusClase;
+import static capaDatos.Materia.StringtoEspecialitat;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -237,10 +240,13 @@ public class GestionDatos {
         return cjt_materias;
     }
 
+    
+    
     @Override
     public String toString() {
         return "GestionDatos{" + "cjt_aules=" + cjt_aules + '}';
     }
+    
     
     
     public boolean guardar_horario(String name, String datos) throws IOException{
@@ -272,7 +278,8 @@ public class GestionDatos {
     }
 
     public boolean cargar_horario(String name) {
-        String ruta = "Persistencia/horarios_guardados/Entorno/" + name;
+        String ruta = "Persistencia/horarios_guardadosboolean del_materia(Materia mat) {\n" +
+"        return cjt_materias.remove(mat);/Entorno/" + name;
         
         File file = new File(ruta);         
         if (!file.exists()) return false;
@@ -284,6 +291,9 @@ public class GestionDatos {
        return true;
     }
 
+    
+    
+    
     public boolean del_aula(Aula aula){
         return cjt_aules.remove(aula);
     }
@@ -296,5 +306,62 @@ public class GestionDatos {
         return cjt_asignatures.remove(asignatura);
     }
     
+    public void eliminar_asignaturas_materia(Materia mat) {
+        String siglas = mat.getSiglas();
+        ArrayList<Asignatura> aux = new ArrayList<>();
+        
+        for(Asignatura a : cjt_asignatures){
+            if (a.getMat().getSiglas().equals(siglas)){
+                aux.add(a);
+            }
+        }
+        for(Asignatura a : aux){
+            cjt_asignatures.remove(a);
+        }
+    }
+
     
+    
+    
+    public Materia found_materia(String siglas) {
+        for (Materia m : cjt_materias){
+            if (m.getSiglas().equals(siglas)) return m;   
+        }
+        return null;
+    }
+
+    public Asignatura found_asignatura(String tipusClase, Materia mat, String siglas, String grupo) {
+        boolean b;
+        b = mat != null;
+        for (Asignatura a : cjt_asignatures){
+            if (((b && (mat.getSiglas().equals(a.getMat().getSiglas()))) || (!b && (siglas.equals(a.getMat().getSiglas()))))
+                    && Integer.parseInt(grupo) == a.getGrupo() && a.getTipusClase() == StringtoTipusclase(tipusClase)) return a;
+        }
+        return null;
+    } 
+
+    public Aula found_aula(String codigo) {
+        for (Aula a : cjt_aules){
+            if (a.getCodigo().equals(codigo)) return a;
+        }
+        return null;
+    }
+
+    public boolean anadir_asignatura(Materia mat, int grupo, String tipusClase, int capacidad, int horaClase) {
+        Asignatura a = new Asignatura(mat, grupo, StringtoTipusclase(tipusClase), capacidad, horaClase);
+        cjt_asignatures.add(a);
+        return true;
+    }
+
+    public boolean anadir_aula(String codigo, int capacidad, TipusClase tipusClase) {
+        Aula a = new Aula(codigo, capacidad, tipusClase);
+        cjt_aules.add(a);
+        return true;
+    }
+    public boolean anadir_materia(String nom, String siglas, int nivel, String e){
+        Materia m = new Materia(nom, siglas, nivel);
+        if (m.getNivel() >= 2) m.setEspecialitat(StringtoEspecialitat(e));
+        cjt_materias.add(m);
+        return true;
+    }
 }
