@@ -39,7 +39,7 @@ public class controladorDominio {
      public controladorDominio(String datos) {
         gestionDatos2 = new capaDatos.GestionDatos("Persistencia/" + datos);
         CJTA = new capaDominio.CjtAsignaciones();
-        rest = new capaDominio.Restricciones();
+        rest = new capaDominio.Restricciones(gestionDatos2.getcjt_asignatures());
     }
      
      public ArrayList<Asignatura> getAsignaturas(){
@@ -61,38 +61,42 @@ public class controladorDominio {
         * @param i Variable per indicar a traves dels nivells de recursivitat quina de les asignatures estem tractan.
         * @return Retorna true si hi existeix una posible combinacio i fals altrament.
         */     
-    private boolean Generar_r(ArrayList<capaDatos.Asignatura> A, int i){
-        if (i >= A.size()){
+    private boolean Generar_r(int i){
+        if (i >= gestionDatos2.getcjt_asignatures().size()){
             return true; // Todas las asignaturas han sido asignadas.
         }
         else {
             boolean b = false; boolean more_hours = true;
-            capaDatos.Asignatura Aux = A.get(i++); // Cojo una asignatura. 
+            capaDatos.Asignatura Aux = gestionDatos2.getcjt_asignatures().get(i); 
             FranjaHoraria fh_aux = new FranjaHoraria(8, FranjaHoraria.Dia.LUNES);
 
             do {
-                capaDatos.Aula aux_aula = rest.Comprueba_Restricciones(Aux, fh_aux, CJTA, gestionDatos2.getcjt_aules());        
+                capaDatos.Aula aux_aula = rest.Comprueba_Restricciones(i, fh_aux, CJTA, gestionDatos2.getcjt_aules());        
                 if (aux_aula != null) {
                     CJTA.addelement(fh_aux, aux_aula, Aux);
-                    b = Generar_r(A, i);// hacer recursividad    
+                    b = Generar_r(i+1);// hacer recursividad    
                     if (!b){
                         CJTA.delelement(fh_aux, aux_aula, Aux);
+                        rest.desmarcar_fh(i, fh_aux);
                         more_hours = fh_aux.seguentHora();
                     }  
                 }                     
             } while (!b && more_hours);
-             return b;   
+            
+            return b;   
         }
     }
+    
     /**
      * Funcio encarregada de cridar a la funcio recursiva de creacio de l'horari.
      * @return Retorna un conjunt d'asignacions no vuit a no ser que no hi hagi combinacio posible.
      */
     public capaDominio.CjtAsignaciones Generar(){
         ArrayList<capaDatos.Asignatura> A = gestionDatos2.getcjt_asignatures();
-        if(!Generar_r(A, 0)) System.out.println("no hay horario");
+        if(!Generar_r(0)) System.out.println("no hay horario");
         return CJTA;
     }
+    
     /**
      * Funcion que retorna el conjunt d'asignacions que componen l'horari.
      * @return Retorna el conjunt d'asignacions
@@ -100,6 +104,7 @@ public class controladorDominio {
     public CjtAsignaciones getCjtA() {
         return CJTA;
     }
+    
     /**
      * Funcio per guardar l'horari una vegada ha sigut generat. 
      * @param nombre Nom dels arxius/carpetes en els que sera guardat l'horari.
@@ -168,7 +173,7 @@ public class controladorDominio {
      * @return Retorna true si s'ha cambiat correctament l'asingacio i false altrament. 
      */
     public boolean cambiar_asignacion(capaDatos.Aula aula, capaDatos.Asignatura asignatura, int fh1, int fh2){
-        FranjaHoraria f1 = inttoFranjaHoraria(fh1);
+     /*   FranjaHoraria f1 = inttoFranjaHoraria(fh1);
         FranjaHoraria f2 = inttoFranjaHoraria(fh2);
         
         System.out.println(f1.getDiaString() + "  " + f1.getHoraIni());
@@ -177,7 +182,7 @@ public class controladorDominio {
         if(aux_aula == null) return false;
         System.out.println("Se ha encontrado aula " + aula.getCodigo());
         CJTA.delelement(f1, aula, asignatura);
-        CJTA.addelement(f2, aula, asignatura);
+        CJTA.addelement(f2, aula, asignatura);*/
         return true;
     }
 }

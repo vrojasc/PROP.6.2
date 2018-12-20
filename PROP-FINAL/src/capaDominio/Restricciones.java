@@ -6,8 +6,10 @@
 package capaDominio;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -15,18 +17,23 @@ import java.util.Map;
  */
 public class Restricciones {
 
+    //Restricciones
     private ArrayList<ArrayList<String>> suavizar;
-    
     private boolean b1,b2,b3;
     private ArrayList<Integer> punteros;
     
-    
+    //Forward Checking
+    private ArrayList<capaDatos.Asignatura> cjt_assigs;
+    private ArrayList<Set<Integer>> pal_tito_forward;
     
     /**
      * Constructora de la clase Restricciones sense parametres.
      */
-    public Restricciones(){
-       
+    public Restricciones(ArrayList<capaDatos.Asignatura> cjt_assigs){
+       suavizar = new ArrayList<>();
+       this.cjt_assigs = cjt_assigs;
+       pal_tito_forward = new ArrayList<>();
+       for (int i = 0; i < cjt_assigs.size(); i++) pal_tito_forward.add(new HashSet<>());
     }
     
     public void setRestricciones (ArrayList<ArrayList<String>> suavizar){
@@ -129,26 +136,49 @@ public class Restricciones {
     }
         
     
-    //-----------------------------------------
+    //Conjunto restricciones suavizables con su configuración
     private boolean rest_asignatura_fh(capaDatos.Asignatura a1, capaDatos.Asignatura a2){
         return ((b1 || tienenDistintoNivel(a1, a2)) &&
                 (b2 || (!esCorequisito(a1, a2) && !esCorequisito(a2, a1))) && 
                 (b3 || !pertMismoGrupo(a1, a2)) &&
                         puedenIrJuntas(a2));
     }
+    
+    
+    //Funciones forward checking
+    private void marcar_fh(int i, FranjaHoraria fh){
+        for (int j = i+1; j < cjt_assigs.size(); j++){
+            if (!rest_asignatura_fh(cjt_assigs.get(i), cjt_assigs.get(j))){
+              for (int k = 0; k < cjt_assigs.get(i).getHoraClase(); k++){
+                  pal_tito_forward.get(j).add(fh.unificar_values()+k);
+              }   
+            }
+        }
+    }
+    
+    public void desmarcar_fh (int i, FranjaHoraria fh){
+         for (int j = i+1; j < cjt_assigs.size(); j++){
+            if (pal_tito_forward.get(j).contains(fh.unificar_values())){
+              for (int k = 0; k < cjt_assigs.get(i).getHoraClase(); k++){
+                  pal_tito_forward.get(j).remove(fh.unificar_values()+k);
+              }   
+            }
+        }       
+    }
      
     /**
      * Obte una posible aula a la que podria anar l'asignatura a la franja horaria tenint en compte les asignatures que ja es fan a aquella franja horaria i les aules disponibles.
-     * @param asig Asignatura a la que es vol asignar una aula.
+     * @param i Asignatura a la que es vol asignar una aula.
      * @param franH Franja horaria a la que es vol fer l'asignacio.
      * @param cjtA CjtAsignaicons fetes fins el moment, per comprobar restriccions entre asignatures que es facin a l'hora.
      * @param aulas Aules disponibles que hi hauran per la franja horaria franH.
      * @return Retorna una aula a la que podria realitzarse l'asignatura asig, i en cas de no haver-hi cap disponible retornar null.
      */
     //------------------------------------------------------------
-    public capaDatos.Aula Comprueba_Restricciones(capaDatos.Asignatura asig, FranjaHoraria franH, CjtAsignaciones cjtA, ArrayList<capaDatos.Aula> aulas){
+    public capaDatos.Aula Comprueba_Restricciones(int i, FranjaHoraria franH, CjtAsignaciones cjtA, ArrayList<capaDatos.Aula> aulas){
         Map<FranjaHoraria, Map<capaDatos.Aula, capaDatos.Asignatura>> cjtAsig = cjtA.getCjtA();
         boolean more_hours; int fh_validas = 0; 
+        capaDatos.Asignatura asig = cjt_assigs.get(i);
         ArrayList<capaDatos.Aula> aulaAux1 = (ArrayList<capaDatos.Aula>)aulas.clone();
         
         int j = 0;
@@ -162,18 +192,13 @@ public class Restricciones {
         do {
             if (cjtAsig.containsKey(franH)){
                 boolean correct = true;
-                Iterator e = cjtAsig.get(franH).values().iterator();
-                while (e.hasNext() && correct){
-                    capaDatos.Asignatura a = (capaDatos.Asignatura) e.next();
-                    if (!rest_asignatura_fh(asig, a)) correct = false;
-                }  
+                if (pal_tito_forward.get(i).contains(franH.unificar_values())) correct = false;
                 if (correct){
                     Iterator e2 = cjtAsig.get(franH).keySet().iterator();
                     while (e2.hasNext()){  
                         capaDatos.Aula key = (capaDatos.Aula) e2.next();
                         if (aulaAux.contains(key)) aulaAux.remove(key);
                     }
-
                     if (!aulaAux.isEmpty()) fh_validas++;
                 }
                 if (!correct || aulaAux.isEmpty()){
@@ -196,6 +221,7 @@ public class Restricciones {
         
         if (fh_validas == asig.getHoraClase()){
             franH.set_values(franH.unificar_values()-asig.getHoraClase());
+            marcar_fh(i, franH);
             return aulaAux.get(0);
         }
         
