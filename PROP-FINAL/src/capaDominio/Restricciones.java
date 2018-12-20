@@ -6,10 +6,9 @@
 package capaDominio;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 /**
  *
@@ -24,7 +23,7 @@ public class Restricciones {
     
     //Forward Checking
     private ArrayList<capaDatos.Asignatura> cjt_assigs;
-    private ArrayList<Set<Integer>> pal_tito_forward;
+    private ArrayList<Map<Integer, ArrayList<Integer>>> pal_tito_forward;
     
     /**
      * Constructora de la clase Restricciones sense parametres.
@@ -33,7 +32,7 @@ public class Restricciones {
        suavizar = new ArrayList<>();
        this.cjt_assigs = cjt_assigs;
        pal_tito_forward = new ArrayList<>();
-       for (int i = 0; i < cjt_assigs.size(); i++) pal_tito_forward.add(new HashSet<>());
+       for (int i = 0; i < cjt_assigs.size(); i++) pal_tito_forward.add(new HashMap<>());
     }
     
     public void setRestricciones (ArrayList<ArrayList<String>> suavizar){
@@ -150,7 +149,9 @@ public class Restricciones {
         for (int j = i+1; j < cjt_assigs.size(); j++){
             if (!rest_asignatura_fh(cjt_assigs.get(i), cjt_assigs.get(j))){
               for (int k = 0; k < cjt_assigs.get(i).getHoraClase(); k++){
-                  pal_tito_forward.get(j).add(fh.unificar_values()+k);
+                  if (!pal_tito_forward.get(j).containsKey(fh.unificar_values()+k)) 
+                      pal_tito_forward.get(j).put(fh.unificar_values()+k, new ArrayList<>());
+                  pal_tito_forward.get(j).get(fh.unificar_values()+k).add(i);
               }   
             }
         }
@@ -158,12 +159,17 @@ public class Restricciones {
     
     public void desmarcar_fh (int i, FranjaHoraria fh){
          for (int j = i+1; j < cjt_assigs.size(); j++){
-            if (pal_tito_forward.get(j).contains(fh.unificar_values())){
-              for (int k = 0; k < cjt_assigs.get(i).getHoraClase(); k++){
-                  pal_tito_forward.get(j).remove(fh.unificar_values()+k);
-              }   
-            }
-        }       
+              for (int k = 0; k < cjt_assigs.get(i).getHoraClase(); k++) { 
+                  if (pal_tito_forward.get(j).containsKey(fh.unificar_values())){
+                      boolean enc = false;
+                      for (int l = 0; l < pal_tito_forward.get(j).get(fh.unificar_values()).size() && !enc; l++){
+                          if (pal_tito_forward.get(j).get(fh.unificar_values()).get(l) == i){
+                              pal_tito_forward.get(j).get(fh.unificar_values()).remove(l);
+                          }
+                      }
+                }   
+              }
+         }       
     }
      
     /**
@@ -192,7 +198,8 @@ public class Restricciones {
         do {
             if (cjtAsig.containsKey(franH)){
                 boolean correct = true;
-                if (pal_tito_forward.get(i).contains(franH.unificar_values())) correct = false;
+                if (pal_tito_forward.get(i).containsKey(franH.unificar_values()) &&
+                    !pal_tito_forward.get(i).get(franH.unificar_values()).isEmpty()) correct = false;
                 if (correct){
                     Iterator e2 = cjtAsig.get(franH).keySet().iterator();
                     while (e2.hasNext()){  
